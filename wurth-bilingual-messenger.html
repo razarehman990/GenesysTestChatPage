@@ -154,6 +154,25 @@
     .quick-order { display:grid; grid-template-columns:1fr 100px; gap:8px; margin:18px 0; }
     .quick-order input { border:1px solid #cfcfcf; padding:10px; min-width:0; font-size:12px; }
     .quick-order-label { font-size:11px; font-weight:bold; }
+    /* Test-only customer detail form: static UI, not an authentication form. */
+    .customer-profile-intro { font-size:13px; line-height:1.5; color:#535353; margin:3px 0 19px; }
+    .customer-profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px 14px; }
+    .customer-profile-field { display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .customer-profile-field label { color:#333; font-size:12px; font-weight:700; }
+    .customer-profile-field label span { color:#c60019; }
+    .customer-profile-field input { width:100%; min-height:42px; background:white; color:#282828; border:1px solid #bcbcbc; border-radius:2px; padding:10px 12px; font-size:13px; }
+    .customer-profile-field input:focus { outline:2px solid #eeb6bd; border-color:#d0001a; }
+    .customer-profile-status { min-height:32px; padding:8px 10px; font-size:12px!important; line-height:1.45!important; background:#f3f3f3; color:#3c3c3c!important; border-left:3px solid #999; margin:16px 0 12px!important; }
+    .customer-profile-status[data-state="success"] { background:#f0f8f1; border-color:#2c8450; }
+    .customer-profile-status[data-state="error"] { background:#fff1f1; border-color:#ce1733; }
+    .customer-profile-actions { display:flex; align-items:center; flex-wrap:wrap; gap:9px; }
+    .customer-profile-actions button { min-height:40px; border-radius:2px; padding:10px 14px; font-size:12px; font-weight:700; }
+    .customer-profile-actions button:disabled { opacity:.55; cursor:progress; }
+    .customer-profile-outlined { background:#fff; color:#292929; border:1px solid #a8a8a8; }
+    .customer-profile-clear { border:0; color:#666; background:transparent; text-decoration:underline; padding-inline:3px!important; }
+    .customer-profile-privacy { font-size:11px!important; line-height:1.55!important; margin-top:15px!important; color:#777!important; }
+    @media(max-width:600px) { .customer-profile-grid { grid-template-columns:1fr; gap:12px; } .customer-profile-actions { align-items:stretch; } .customer-profile-actions button { width:100%; } }
+
     .modal-action { padding:11px 20px; background:var(--red); border:0; color:white; font-size:12px; font-weight:bold; }
     .modal-action:hover { background:var(--dark-red); }
     .mode-indicator { position:fixed; left:14px; bottom:14px; z-index:20; font-size:10px; background:rgba(29,29,29,.9); border:1px solid #555; color:#fff; padding:8px 10px; border-radius:3px; display:none; pointer-events:none; }
@@ -250,6 +269,55 @@
         environment: 'prod-cac1',
         deploymentId: deploymentIds[language]
       };
+
+      /* Read the saved profile before Messenger starts. Database.set is queued by
+         the Genesys bootstrap so custom attributes are present for the first message. */
+      const profileStorageKey = 'wurth-bilingual-chat-customer-v1';
+      function normalizeCustomerProfile(raw) {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+        const limits = {customerName:100, businessName:120, customerNumber:80, customerEmail:160};
+        const profile = {};
+        for (const [key, maximum] of Object.entries(limits)) {
+          if (typeof raw[key] !== 'string') return null;
+          const value = raw[key].trim();
+          if (!value || value.length > maximum) return null;
+          profile[key] = value;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.customerEmail)) return null;
+        return profile;
+      }
+      const profileBridge = {
+        key: profileStorageKey,
+        normalize: normalizeCustomerProfile,
+        read: function() {
+          try { return normalizeCustomerProfile(JSON.parse(sessionStorage.getItem(profileStorageKey) || 'null')); }
+          catch (error) { return null; }
+        },
+        attributes: function(profile) {
+          return {
+            customerName: profile.customerName,
+            businessName: profile.businessName,
+            customerNumber: profile.customerNumber,
+            customerEmail: profile.customerEmail
+          };
+        }
+      };
+      window.__wurthProfileBridge = profileBridge;
+      const savedProfile = profileBridge.read();
+      if (savedProfile) {
+        window.Genesys('command', 'Database.set', {
+          messaging: { customAttributes: profileBridge.attributes(savedProfile) }
+        });
+      }
+      /* A brand-new conversation may start after a previous one is cleared. */
+      window.Genesys('subscribe', 'MessagingService.conversationCleared', function() {
+        const current = profileBridge.read();
+        if (current) {
+          window.Genesys('command', 'Database.set', {
+            messaging: { customAttributes: profileBridge.attributes(current) }
+          });
+        }
+      });
       const script = document.createElement('script');
       script.async = true;
       script.charset = 'utf-8';
@@ -357,6 +425,25 @@
     <div><h3>CUSTOMER SUPPORT</h3><ul class="footer-links"><li><button type="button" data-modal="about">Contact</button></li><li><button type="button" data-modal="about">FAQ</button></li><li><button type="button" data-modal="email">Email Sign Up</button></li><li><button type="button" data-modal="about">Company Locations</button></li><li><a href="https://shop.wurth.ca/" rel="noopener noreferrer" target="_blank">Visit official Würth Canada shop ↗</a></li></ul></div>
   </div><div class="wrap foot-bottom"><span>Storefront layout inspired by Würth Canada. This page is an independently built test UI.</span><span><a href="https://shop.wurth.ca/" target="_blank" rel="noopener noreferrer">Official shop</a> &nbsp;·&nbsp; QA demo only</span></div>
   <div class="demo-disclaimer"><strong>TEST PAGE — NOT THE OFFICIAL WÜRTH STORE.</strong> No account access, transactions, orders, payments or email subscriptions are processed on this page.</div></footer>
+
+  <template id="customer-profile-template">
+    <p class="customer-profile-intro">Enter your details to share them with Genesys Messenger when you start a new chat. This is not an account registration or a login.</p>
+    <form id="customer-profile-form" autocomplete="off">
+      <div class="customer-profile-grid">
+        <div class="customer-profile-field"><label for="customer-name">Customer Name <span aria-hidden="true">*</span></label><input id="customer-name" name="customerName" type="text" maxlength="100" required autocomplete="off"></div>
+        <div class="customer-profile-field"><label for="business-name">Business Name <span aria-hidden="true">*</span></label><input id="business-name" name="businessName" type="text" maxlength="120" required autocomplete="off"></div>
+        <div class="customer-profile-field"><label for="customer-number">Customer Number <span aria-hidden="true">*</span></label><input id="customer-number" name="customerNumber" type="text" maxlength="80" required autocomplete="off" spellcheck="false"></div>
+        <div class="customer-profile-field"><label for="customer-email">Customer Email <span aria-hidden="true">*</span></label><input id="customer-email" name="customerEmail" type="email" maxlength="160" required autocomplete="off" spellcheck="false"></div>
+      </div>
+      <p class="customer-profile-status" id="customer-profile-status" role="status" aria-live="polite">Details have not been saved yet.</p>
+      <div class="customer-profile-actions">
+        <button id="customer-profile-save" class="redbtn" type="submit">Save details</button>
+        <button id="customer-profile-start" class="customer-profile-outlined" type="button">Save &amp; Start Chat</button>
+        <button id="customer-profile-clear" class="customer-profile-clear" type="button">Clear saved details</button>
+      </div>
+      <p class="customer-profile-privacy">Stored only for this browser tab session. Changes are intended for new chats; an already-started conversation may retain previously shared details. For QA, use test customer data.</p>
+    </form>
+  </template>
   <div class="modal-backdrop" id="modal-backdrop" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1" id="modal"><button type="button" class="close" id="modal-close" aria-label="Close">×</button><h2 id="modal-title"></h2><div id="modal-content"></div><div class="modal-actions"><button type="button" class="modal-action" id="modal-done">Close</button></div></section></div>
   <div id="mode-indicator" class="mode-indicator" aria-hidden="true"></div>
   <script>
@@ -464,6 +551,27 @@
       "View category":"Voir la catégorie",
       "This category is included as part of the storefront replica. Real product browsing, inventory and checkout are not connected.":"Cette catégorie figure dans la réplique de la boutique. La navigation réelle des produits, les stocks et le paiement ne sont pas connectés.",
       "This is a static website for Genesys Messenger testing. Use the official Würth Canada store for purchasing.":"Il s'agit d'un site statique pour tester Genesys Messenger. Faites vos achats sur la boutique officielle Würth Canada.",
+
+      "Customer details for chat":"Coordonnées du client pour le clavardage",
+      "Enter your details to share them with Genesys Messenger when you start a new chat. This is not an account registration or a login.":"Saisissez vos renseignements pour les transmettre à Genesys Messenger lors d'un nouveau clavardage. Il ne s'agit ni d'une inscription ni d'une connexion à un compte.",
+      "Customer Name":"Nom du client",
+      "Business Name":"Nom de l'entreprise",
+      "Customer Number":"Numéro de client",
+      "Customer Email":"Courriel du client",
+      "Details have not been saved yet.":"Les renseignements n'ont pas encore été enregistrés.",
+      "Save details":"Enregistrer les renseignements",
+      "Save & Start Chat":"Enregistrer et commencer le clavardage",
+      "Clear saved details":"Effacer les renseignements enregistrés",
+      "Stored only for this browser tab session. Changes are intended for new chats; an already-started conversation may retain previously shared details. For QA, use test customer data.":"Conservés uniquement pendant la session de cet onglet. Les modifications s'appliquent aux nouveaux clavardages; une conversation déjà commencée peut conserver les renseignements précédents. Utilisez des données fictives pour les tests.",
+      "Details are saved for this browser tab. You can edit them here.":"Les renseignements sont enregistrés pour cet onglet. Vous pouvez les modifier ici.",
+      "Please complete all four fields with a valid email address.":"Remplissez les quatre champs et saisissez une adresse courriel valide.",
+      "Unable to save these details in this browser session. Check your browser's storage settings.":"Impossible d'enregistrer les renseignements dans cette session. Vérifiez les paramètres de stockage du navigateur.",
+      "Saved in this tab. Preparing the details for Genesys Messenger…":"Enregistré dans cet onglet. Préparation des renseignements pour Genesys Messenger…",
+      "Saved. The customer details are ready for your next Genesys chat.":"Enregistré. Les renseignements du client sont prêts pour le prochain clavardage Genesys.",
+      "Saved locally, but Genesys has not confirmed the data. Please try saving again before starting a chat.":"Enregistré localement, mais Genesys n'a pas confirmé les données. Réessayez avant de commencer un clavardage.",
+      "Customer details were removed from this tab. Earlier chats may still retain information already sent.":"Les renseignements du client ont été effacés de cet onglet. Les clavardages précédents peuvent conserver les données déjà transmises.",
+      "Unable to open chat":"Impossible d'ouvrir le clavardage",
+      "Genesys Messenger could not be opened. Check that the deployment is enabled and this website's domain is allowed.":"Impossible d'ouvrir Genesys Messenger. Vérifiez que le déploiement est actif et que le domaine de ce site est autorisé.",
       "Business account":"Compte professionnel",
       "The official store supports registered customer accounts and customized purchasing features.":"La boutique officielle propose des comptes clients et des fonctions d'achat personnalisées.",
       "To protect users, this test page does not collect usernames, passwords, customer details or registrations.":"Pour protéger les utilisateurs, cette page de test ne recueille aucun nom d'utilisateur, mot de passe, renseignement client ou inscription.",
@@ -689,7 +797,113 @@
       clearance:['Clearance',`<p>This page does not connect to the live store's clearance inventory. The visual shortcut is available for navigation testing only.</p>`],
       email:['Email signup',`<p>Email signup is not available on this static test site.</p><div class="demo-note">No personal information is collected or stored. Use the official website if you want to subscribe to the real mailing list.</div>`]
     };
-    document.querySelectorAll('[data-modal]').forEach(b=>b.addEventListener('click',()=>{const key=b.getAttribute('data-modal');const item=contentFor[key]; if(item)showModal(item[0],item[1]);}));
+
+    /* Local customer details -> sessionStorage -> Genesys participant attributes.
+       This does not authenticate the visitor or create a Würth user account. */
+    function openCustomerDetailsForm() {
+      const formTemplate = document.getElementById('customer-profile-template');
+      showModal('Customer details for chat', formTemplate.innerHTML);
+      const bridge = window.__wurthProfileBridge;
+      const form = document.getElementById('customer-profile-form');
+      const status = document.getElementById('customer-profile-status');
+      const save = document.getElementById('customer-profile-save');
+      const start = document.getElementById('customer-profile-start');
+      const clear = document.getElementById('customer-profile-clear');
+      const existing = bridge.read();
+      function setStatus(message, state) {
+        status.textContent = t(message);
+        status.dataset.state = state || '';
+      }
+      function setBusy(busy) {
+        save.disabled = busy;
+        start.disabled = busy;
+        clear.disabled = busy;
+      }
+      if (existing) {
+        for (const key of Object.keys(bridge.attributes(existing))) {
+          if (form.elements.namedItem(key)) form.elements.namedItem(key).value = existing[key];
+        }
+        setStatus('Details are saved for this browser tab. You can edit them here.', 'success');
+      }
+      function submitCustomerProfile(openChat) {
+        if (!form.reportValidity()) return;
+        const raw = {
+          customerName: form.elements.namedItem('customerName').value,
+          businessName: form.elements.namedItem('businessName').value,
+          customerNumber: form.elements.namedItem('customerNumber').value,
+          customerEmail: form.elements.namedItem('customerEmail').value
+        };
+        const profile = bridge.normalize(raw);
+        if (!profile) {
+          setStatus('Please complete all four fields with a valid email address.', 'error');
+          return;
+        }
+        try {
+          sessionStorage.setItem(bridge.key, JSON.stringify(profile));
+        } catch (error) {
+          setStatus("Unable to save these details in this browser session. Check your browser's storage settings.", 'error');
+          return;
+        }
+        setStatus('Saved in this tab. Preparing the details for Genesys Messenger…', '');
+        setBusy(true);
+        let settled = false;
+        const watchdog = window.setTimeout(function() {
+          if (settled) return;
+          settled = true;
+          setBusy(false);
+          setStatus('Saved locally, but Genesys has not confirmed the data. Please try saving again before starting a chat.', 'error');
+        }, 10000);
+        function complete(success) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(watchdog);
+          setBusy(false);
+          if (!success) {
+            setStatus('Saved locally, but Genesys has not confirmed the data. Please try saving again before starting a chat.', 'error');
+            return;
+          }
+          setStatus('Saved. The customer details are ready for your next Genesys chat.', 'success');
+          if (openChat) {
+            closeModal();
+            window.Genesys('command', 'Messenger.open', {}, function(){}, function(){
+              showModal('Unable to open chat', '<p>Genesys Messenger could not be opened. Check that the deployment is enabled and this website&#39;s domain is allowed.</p>');
+            });
+          }
+        }
+        try {
+          window.Genesys('command', 'Database.set', {
+            messaging: { customAttributes: bridge.attributes(profile) }
+          }, function(){ complete(true); }, function(){ complete(false); });
+        } catch (error) {
+          complete(false);
+        }
+      }
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        submitCustomerProfile(false);
+      });
+      start.addEventListener('click', function() { submitCustomerProfile(true); });
+      clear.addEventListener('click', function() {
+        try {
+          sessionStorage.removeItem(bridge.key);
+        } catch (error) {
+          setStatus("Unable to save these details in this browser session. Check your browser's storage settings.", 'error');
+          return;
+        }
+        form.reset();
+        /* Clear the cached values for future conversation messages where supported.
+           Values already sent to prior conversations cannot be recalled by the browser. */
+        try {
+          window.Genesys('command', 'Database.set', {
+            messaging: { customAttributes: {
+              customerName: '', businessName: '', customerNumber: '', customerEmail: ''
+            }}
+          });
+        } catch (error) {}
+        setStatus('Customer details were removed from this tab. Earlier chats may still retain information already sent.', 'success');
+      });
+    }
+    document.querySelectorAll('[data-modal]').forEach(b=>b.addEventListener('click',()=>{const key=b.getAttribute('data-modal');if(key==='account'){openCustomerDetailsForm();return;}const item=contentFor[key]; if(item)showModal(item[0],item[1]);}));
     document.querySelectorAll('[data-info]').forEach(b=>b.addEventListener('click',()=>showModal('Demo note',`<p>${b.getAttribute('data-info')}</p>`)));
     /* The deployment and locale are chosen by the bootstrap in <head>. */
     document.querySelectorAll('[data-language-select]').forEach(function(btn) { btn.addEventListener('click', function() { setDemoLanguage(btn.getAttribute('data-language-select')); }); });
