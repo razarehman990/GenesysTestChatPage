@@ -22,6 +22,12 @@
     .utility-bar a:hover { color:var(--red); }
     .demo-label { padding:2px 7px; font-size:9px; text-transform:uppercase; font-weight:800; color:#7d4b00; letter-spacing:.065em; background:#fff1d4; border:1px solid #f2d995; border-radius:3px; }
     .sep { color:#bdbdbd; }
+    .lang-switch { display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+    .lang-option { border:0; background:none; padding:2px 3px; font-size:11px; line-height:1; color:#727272; font-weight:400; }
+    .lang-option:hover { color:var(--red); text-decoration:underline; }
+    .lang-option[aria-pressed="true"] { color:#222; font-weight:800; text-decoration:underline; text-decoration-color:var(--red); text-underline-offset:3px; }
+    @media (max-width:600px) { .lang-switch { gap:3px; } .lang-option { min-height:24px; } }
+
     .header-main { background:white; }
     .head-inner { min-height:88px; display:flex; align-items:center; gap:clamp(24px,4vw,72px); }
     .brand { display:flex; align-items:center; gap:10px; flex-shrink:0; width:220px; }
@@ -245,7 +251,7 @@
     <div class="utility-bar"><div class="wrap">
       <span class="demo-label">Unofficial QA demo</span>
       <span class="help">Need Help? Call 1-800-263-5002</span>
-      <span><b>EN</b> <span class="sep">|</span> <button style="background:none;border:0;font-size:11px;color:#777;padding:0;" type="button" data-info="French-language shopping is not implemented in this static demo.">FR</button></span>
+      <span class="lang-switch" role="group" aria-label="Website language"><button class="lang-option" type="button" data-language-select="en" lang="en" aria-label="English" aria-pressed="true">EN</button><span class="sep" aria-hidden="true">|</span><button class="lang-option" type="button" data-language-select="fr" lang="fr" aria-label="Français" aria-pressed="false">FR</button></span>
     </div></div>
     <div class="header-main"><div class="wrap head-inner">
       <a class="brand" href="#top" aria-label="Würth Canada storefront demo home">
@@ -342,6 +348,237 @@
   <div class="modal-backdrop" id="modal-backdrop" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1" id="modal"><button type="button" class="close" id="modal-close" aria-label="Close">×</button><h2 id="modal-title"></h2><div id="modal-content"></div><div class="modal-actions"><button type="button" class="modal-action" id="modal-done">Close</button></div></section></div>
   <div id="mode-indicator" class="mode-indicator" aria-hidden="true"></div>
   <script>
+
+    /* Local storefront translation only. Genesys Messenger's own language is configured in Genesys Cloud. */
+    const frText = {
+      "Unofficial QA demo":"Démo AQ non officielle",
+      "Need Help? Call 1-800-263-5002":"Besoin d'aide? Composez le 1 800 263-5002",
+      "Würth Canada storefront demo home":"Accueil de la démo Würth Canada",
+      "Search product categories":"Rechercher dans les catégories de produits",
+      "What are you searching for?":"Que recherchez-vous?",
+      "Search":"Rechercher",
+      "Open quick order pad":"Ouvrir la commande rapide",
+      "Quick order":"Commande rapide",
+      "Account information":"Informations sur le compte",
+      "Register | Login":"S'inscrire | Se connecter",
+      "Open demo cart":"Ouvrir le panier de démonstration",
+      "View cart":"Voir le panier",
+      "Primary navigation":"Navigation principale",
+      "Product categories":"Catégories de produits",
+      "Products":"Produits",
+      "Shop by category":"Magasiner par catégorie",
+      "Catalogue":"Catalogue",
+      "Solutions":"Solutions",
+      "Stores":"Magasins",
+      "Why Us":"Pourquoi nous choisir",
+      "Profit Tools":"Outils de rentabilité",
+      "LIMITED TIME:":"OFFRE À DURÉE LIMITÉE :",
+      "Explore professional-grade tools and supplies. For current offers visit the live store.":"Découvrez nos outils et fournitures professionnels. Consultez la boutique officielle pour les offres en cours.",
+      "Details":"Détails",
+      "Featured campaigns":"Offres en vedette",
+      "BUILT FOR":"CONÇU POUR",
+      "THE JOB.":"VOTRE TRAVAIL.",
+      "Fasteners, tools and supplies for the work that matters.":"Fixations, outils et fournitures pour vos projets importants.",
+      "EXPLORE PRODUCTS":"VOIR LES PRODUITS",
+      "WORKSHOP ESSENTIALS":"LES INCONTOURNABLES DE L'ATELIER",
+      "TOOLS THAT":"DES OUTILS",
+      "DELIVER.":"PERFORMANTS.",
+      "PROFESSIONAL QUALITY":"QUALITÉ PROFESSIONNELLE",
+      "BROWSE TOOLS →":"VOIR LES OUTILS →",
+      "YOUR WORK. OUR WORLD.":"VOTRE TRAVAIL. NOTRE UNIVERS.",
+      "MASTER":"CATALOGUE",
+      "CATALOGUE.":"PRINCIPAL.",
+      "Explore a wide range of professional products.":"Découvrez notre vaste gamme de produits professionnels.",
+      "VIEW CATEGORIES →":"VOIR LES CATÉGORIES →",
+      "PRODUCT CATEGORIES":"CATÉGORIES DE PRODUITS",
+      "20 categories":"20 catégories",
+      "How can your business benefit from Würth?":"Comment Würth peut-elle aider votre entreprise?",
+      "Discover convenient tools designed to make purchasing supplies easier for professional customers.":"Découvrez des outils pratiques qui simplifient l'achat de fournitures pour les professionnels.",
+      "View and manage invoices":"Consulter et gérer vos factures",
+      "Access your order history":"Consulter l'historique de vos commandes",
+      "Find the supplies you need":"Trouver les fournitures nécessaires",
+      "Get support from specialists":"Obtenir l'aide de spécialistes",
+      "Explore business solutions":"Découvrir les solutions d'affaires",
+      "REGISTER":"S'INSCRIRE",
+      "No matching categories found. Try searching for “tools”, “fasteners”, or “safety”.":"Aucune catégorie trouvée. Essayez « outils », « fixations » ou « sécurité ».",
+      "More ways to shop":"D'autres façons de magasiner",
+      "New":"Nouveautés",
+      "Discover what's new in our range":"Découvrez les nouveautés de notre gamme",
+      "Hot Deals":"Offres spéciales",
+      "Explore seasonal savings":"Profitez des économies saisonnières",
+      "Clearance":"Liquidation",
+      "Browse end-of-line selections":"Parcourez les articles en fin de série",
+      "Email Sign Up":"Inscription aux courriels",
+      "Stay in the loop with new offers":"Recevez les dernières offres",
+      "Across Canada":"Partout au Canada",
+      "Nationwide availability":"Disponibles partout au pays",
+      "Professional Quality":"Qualité professionnelle",
+      "Products for demanding work":"Des produits pour les travaux exigeants",
+      "Product Support":"Soutien aux produits",
+      "Help finding the right solution":"De l'aide pour trouver la bonne solution",
+      "Broad Selection":"Vaste sélection",
+      "Industrial & automotive supplies":"Fournitures industrielles et automobiles",
+      "COMPANY":"ENTREPRISE",
+      "About us":"À propos de nous",
+      "The Würth Group":"Le Groupe Würth",
+      "Quality and ISO 9001":"Qualité et ISO 9001",
+      "Careers":"Carrières",
+      "Sustainability":"Développement durable",
+      "SERVICES & SOLUTIONS":"SERVICES ET SOLUTIONS",
+      "National Accounts":"Grands comptes",
+      "Electronic Procurement":"Approvisionnement électronique",
+      "Inventory Solutions":"Solutions de gestion des stocks",
+      "Online Customer Tools":"Outils clients en ligne",
+      "Professional Services":"Services professionnels",
+      "SHOPPING TOOLS":"OUTILS D'ACHAT",
+      "Master catalogue":"Catalogue principal",
+      "System cases":"Coffrets système",
+      "Sealants":"Produits d'étanchéité",
+      "Made in Canada":"Fabriqué au Canada",
+      "Product information":"Renseignements sur les produits",
+      "CUSTOMER SUPPORT":"SERVICE À LA CLIENTÈLE",
+      "Contact":"Nous joindre",
+      "FAQ":"FAQ",
+      "Company Locations":"Emplacements de l'entreprise",
+      "Visit official Würth Canada shop ↗":"Visiter la boutique officielle Würth Canada ↗",
+      "Storefront layout inspired by Würth Canada. This page is an independently built test UI.":"Interface inspirée de la boutique Würth Canada. Cette page de test a été créée indépendamment.",
+      "Official shop":"Boutique officielle",
+      "QA demo only":"Démo AQ seulement",
+      "TEST PAGE — NOT THE OFFICIAL WÜRTH STORE.":"PAGE DE TEST — CE N'EST PAS LA BOUTIQUE OFFICIELLE WÜRTH.",
+      "No account access, transactions, orders, payments or email subscriptions are processed on this page.":"Aucun accès aux comptes, aucune transaction, commande, paiement ou inscription aux courriels n'est effectué sur cette page.",
+      "Close":"Fermer",
+      "View category":"Voir la catégorie",
+      "This category is included as part of the storefront replica. Real product browsing, inventory and checkout are not connected.":"Cette catégorie figure dans la réplique de la boutique. La navigation réelle des produits, les stocks et le paiement ne sont pas connectés.",
+      "This is a static website for Genesys Messenger testing. Use the official Würth Canada store for purchasing.":"Il s'agit d'un site statique pour tester Genesys Messenger. Faites vos achats sur la boutique officielle Würth Canada.",
+      "Business account":"Compte professionnel",
+      "The official store supports registered customer accounts and customized purchasing features.":"La boutique officielle propose des comptes clients et des fonctions d'achat personnalisées.",
+      "To protect users, this test page does not collect usernames, passwords, customer details or registrations.":"Pour protéger les utilisateurs, cette page de test ne recueille aucun nom d'utilisateur, mot de passe, renseignement client ou inscription.",
+      "Your cart":"Votre panier",
+      "Your demo cart is empty.":"Votre panier de démonstration est vide.",
+      "Ordering, payments and checkout are disabled in this replica.":"Les commandes, paiements et étapes de paiement sont désactivés dans cette réplique.",
+      "Quick Order Pad":"Formulaire de commande rapide",
+      "This is a non-transactional preview of a quick order entry form.":"Voici un aperçu non transactionnel du formulaire de commande rapide.",
+      "Item number":"Numéro d'article",
+      "Quantity":"Quantité",
+      "Item #":"N° d'article",
+      "Qty":"Qté",
+      "Demo item number 1":"Numéro d'article de démo 1",
+      "Demo item number 2":"Numéro d'article de démo 2",
+      "Demo item number 3":"Numéro d'article de démo 3",
+      "Demo quantity 1":"Quantité de démo 1",
+      "Demo quantity 2":"Quantité de démo 2",
+      "Demo quantity 3":"Quantité de démo 3",
+      "This form does not send, store, or process data. There is no add-to-cart or ordering endpoint.":"Ce formulaire n'envoie, ne stocke et ne traite aucune donnée. L'ajout au panier et les commandes ne sont pas connectés.",
+      "Promotional details":"Détails de la promotion",
+      "This demo includes a promotional banner to match the visual layout of an online storefront.":"Cette démo comprend une bannière promotionnelle pour reproduire la présentation d'une boutique en ligne.",
+      "Promotions, prices and availability change. Visit the official site to view actual active offers and their terms.":"Les promotions, les prix et la disponibilité peuvent changer. Consultez le site officiel pour les offres et leurs conditions.",
+      "Würth Canada — demo information":"Würth Canada — renseignements sur la démo",
+      "Inspired by Würth Canada's online catalogue for professional industrial, automotive, construction, and maintenance supplies.":"Inspirée du catalogue en ligne de Würth Canada pour les fournitures industrielles, automobiles, de construction et d'entretien.",
+      "This standalone replica preserves the general visual hierarchy for UI and chat-widget testing, but it is not affiliated with or operated by the official store.":"Cette réplique autonome reproduit la structure visuelle générale pour tester l'interface et la messagerie, mais n'est ni affiliée à la boutique officielle ni exploitée par celle-ci.",
+      "For authentic company information and shopping, use":"Pour obtenir des renseignements officiels et faire des achats, utilisez",
+      "New products":"Nouveaux produits",
+      "This shortcut is included for storefront usability testing. Browse the static categories below for the product families represented in this demo.":"Ce raccourci sert aux essais de navigation. Parcourez les catégories statiques pour voir les gammes de produits représentées dans cette démo.",
+      "Hot deals":"Offres spéciales",
+      "A sample store promotion destination. Current pricing and discount offers are available only from the live Würth Canada store.":"Voici un exemple de page promotionnelle. Les prix et rabais actuels sont offerts uniquement sur la boutique officielle Würth Canada.",
+      "This page does not connect to the live store's clearance inventory. The visual shortcut is available for navigation testing only.":"Cette page n'est pas reliée aux stocks de liquidation de la boutique. Ce raccourci sert uniquement aux essais de navigation.",
+      "Email signup":"Inscription aux courriels",
+      "Email signup is not available on this static test site.":"L'inscription aux courriels n'est pas offerte sur ce site de test statique.",
+      "No personal information is collected or stored. Use the official website if you want to subscribe to the real mailing list.":"Aucun renseignement personnel n'est recueilli ou stocké. Utilisez le site officiel pour vous abonner à la véritable liste de diffusion.",
+      "Demo note":"Note de démonstration",
+      "Abrasives":"Abrasifs",
+      "Adhesives & Tapes":"Adhésifs et rubans",
+      "Anchors":"Ancrages",
+      "Auto Bulbs & Work Lights":"Ampoules auto et lampes de travail",
+      "Cleaning, Detailing & Sanitation":"Nettoyage, esthétique et assainissement",
+      "Cutting":"Coupe",
+      "Electrical":"Électricité",
+      "Equipment & Storage":"Équipement et rangement",
+      "Fasteners":"Fixations",
+      "Fittings, Hoses & Tubing":"Raccords, tuyaux et tubes",
+      "Lubricants & Greases":"Lubrifiants et graisses",
+      "ORSY Systems & Solutions":"Systèmes et solutions ORSY",
+      "Paints & Primers":"Peintures et apprêts",
+      "Power Tools":"Outils électriques",
+      "Rust Proofing & Rust Remover":"Antirouille et élimination de la rouille",
+      "Safety Supplies & First Aid":"Équipement de sécurité et premiers soins",
+      "Sealants, O-Rings":"Produits d'étanchéité et joints toriques",
+      "Tools":"Outils",
+      "Vehicle Repair & Components":"Réparation et composants de véhicules",
+      "Welding Supplies":"Fournitures de soudage"
+    };
+    function readDemoLanguage() {
+      const urlLang = new URLSearchParams(location.search).get('language');
+      if (urlLang === 'fr' || urlLang === 'en') return urlLang;
+      try { return localStorage.getItem('wurth-demo-lang') === 'fr' ? 'fr' : 'en'; }
+      catch (err) { return 'en'; }
+    }
+    let demoLang = readDemoLanguage();
+    function t(key) { return demoLang === 'fr' ? (frText[key] || key) : key; }
+    function normalizeSearch(value) {
+      return String(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    }
+    const originalText = new WeakMap();
+    const originalAttributes = new WeakMap();
+    function translateDom(root) {
+      if (!root) return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const parent = node.parentElement;
+        if (!parent || parent.closest('script,style,noscript,svg,textarea')) continue;
+        if (!originalText.has(node)) originalText.set(node, node.nodeValue);
+        const en = originalText.get(node);
+        const key = en.trim();
+        if (!key) continue;
+        const localized = en.slice(0, en.indexOf(key)) + t(key) + en.slice(en.indexOf(key) + key.length);
+        if (node.nodeValue !== localized) node.nodeValue = localized;
+      }
+      const elements = [root].concat(Array.from(root.querySelectorAll('[placeholder],[aria-label],[title]')));
+      for (const el of elements) {
+        if (!el.getAttribute) continue;
+        if (!originalAttributes.has(el)) {
+          const attrs = {};
+          for (const attr of ['placeholder','aria-label','title']) if (el.hasAttribute(attr)) attrs[attr] = el.getAttribute(attr);
+          originalAttributes.set(el, attrs);
+        }
+        const original = originalAttributes.get(el);
+        for (const attr of Object.keys(original)) {
+          const value = t(original[attr]);
+          if (el.getAttribute(attr) !== value) el.setAttribute(attr, value);
+        }
+      }
+    }
+    function applyDemoLanguage() {
+      document.documentElement.lang = demoLang === 'fr' ? 'fr-CA' : 'en-CA';
+      document.title = demoLang === 'fr' ? 'Würth Canada | Démo de boutique en ligne' : 'Würth Canada | Storefront UI Demo';
+      document.querySelectorAll('[data-language-select]').forEach(function(btn) {
+        btn.setAttribute('aria-pressed', String(btn.getAttribute('data-language-select') === demoLang));
+      });
+      [document.querySelector('header'), document.querySelector('main'), document.querySelector('footer'), document.getElementById('modal-backdrop')].forEach(translateDom);
+      renderCategories(searchInput.value);
+      Array.from(megaList.querySelectorAll('button')).forEach(function(btn,i) {
+        if (categories[i]) btn.textContent = t(categories[i].name);
+      });
+      const indicator = document.getElementById('mode-indicator');
+      const modeSelected = new URLSearchParams(location.search).get('messenger');
+      if (indicator && (modeSelected === 'workflow' || modeSelected === 'agentless')) {
+        indicator.textContent = (demoLang === 'fr' ? 'Genesys AQ · ' : 'Genesys QA · ') +
+          (modeSelected === 'workflow' ? (demoLang === 'fr' ? 'Déploiement Workflow' : 'Workflow deployment') : (demoLang === 'fr' ? 'Déploiement Agentless' : 'Agentless deployment'));
+      }
+    }
+    function setDemoLanguage(lang) {
+      if (lang !== 'en' && lang !== 'fr') return;
+      demoLang = lang;
+      try { localStorage.setItem('wurth-demo-lang', lang); } catch (err) {}
+      try {
+        const url = new URL(window.location.href);
+        if (lang === 'fr') url.searchParams.set('language','fr');
+        else url.searchParams.delete('language');
+        history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+      } catch (err) {}
+      applyDemoLanguage();
+    }
+
     const categories = [
       {name:'Abrasives', art:'disc', search:'grinding cutting discs sanding paper'},
       {name:'Adhesives & Tapes', art:'tube', search:'glue adhesive tape bonding'},
@@ -391,28 +628,28 @@
     const feedback = document.getElementById('search-feedback');
     const countLabel = document.getElementById('category-count');
     const searchInput = document.getElementById('site-search');
-    function openCategory(name) { showModal(name, `<p>This category is included as part of the storefront replica. Real product browsing, inventory and checkout are not connected.</p><div class="demo-note">This is a static website for Genesys Messenger testing. Use the official Würth Canada store for purchasing.</div>`); }
+    function openCategory(name) { showModal(t(name), `<p>This category is included as part of the storefront replica. Real product browsing, inventory and checkout are not connected.</p><div class="demo-note">This is a static website for Genesys Messenger testing. Use the official Würth Canada store for purchasing.</div>`); }
     function renderCategories(query='') {
-      const q = query.trim().toLowerCase();
+      const q = normalizeSearch(query.trim());
       grid.querySelectorAll('.category').forEach(el => el.remove());
-      const matches = categories.filter(c => !q || [c.name,c.search].join(' ').toLowerCase().includes(q));
+      const matches = categories.filter(c => !q || normalizeSearch([c.name,t(c.name),c.search].join(' ')).includes(q));
       for(const cat of matches){
-        const btn=document.createElement('button');btn.type='button';btn.className='category';btn.setAttribute('aria-label',`View ${cat.name} demo category`);
+        const btn=document.createElement('button');btn.type='button';btn.className='category';btn.setAttribute('aria-label', (demoLang === 'fr' ? 'Voir la catégorie ' : 'View ') + t(cat.name) + (demoLang === 'fr' ? '' : ' demo category'));
         const img=document.createElement('img');img.src=artSvgData(cat.art);img.alt='';img.className='category-art';img.loading='eager';
-        const name=document.createElement('span');name.className='category-name';name.textContent=cat.name;
+        const name=document.createElement('span');name.className='category-name';name.textContent=t(cat.name);
         btn.append(img,name);btn.addEventListener('click',()=>openCategory(cat.name));
         grid.insertBefore(btn,noResults);
       }
       noResults.style.display = matches.length ? 'none':'block';
-      countLabel.textContent = q ? `${matches.length} result${matches.length===1?'':'s'}` : '20 categories';
+      countLabel.textContent = q ? (demoLang === 'fr' ? matches.length + ' résultat' + (matches.length===1 ? '' : 's') : matches.length + ' result' + (matches.length===1 ? '' : 's')) : (demoLang === 'fr' ? '20 catégories' : '20 categories');
       feedback.style.display=q?'block':'none';
-      if(q) feedback.textContent=`Showing ${matches.length} matching categor${matches.length===1?'y':'ies'} for “${query}”.`;
+      if(q) feedback.textContent = demoLang === 'fr' ? 'Affichage de ' + matches.length + ' catégorie' + (matches.length===1 ? '' : 's') + ' pour « ' + query + ' ».' : 'Showing ' + matches.length + ' matching categor' + (matches.length===1 ? 'y' : 'ies') + ' for “' + query + '”.';
     }
     renderCategories();
     document.getElementById('search-form').addEventListener('submit',e=>{e.preventDefault();renderCategories(searchInput.value);document.getElementById('categories').scrollIntoView({behavior:'smooth'});});
     searchInput.addEventListener('input',()=>{if(searchInput.value.length===0) renderCategories();});
     const megaList=document.getElementById('mega-categories');
-    categories.forEach(cat=>{const li=document.createElement('li');const button=document.createElement('button');button.type='button';button.textContent=cat.name;button.addEventListener('click',()=>{setMega(false);openCategory(cat.name);});li.appendChild(button);megaList.appendChild(li);});
+    categories.forEach(cat=>{const li=document.createElement('li');const button=document.createElement('button');button.type='button';button.textContent=t(cat.name);button.addEventListener('click',()=>{setMega(false);openCategory(cat.name);});li.appendChild(button);megaList.appendChild(li);});
     const mega=document.getElementById('mega-menu'); const prodMenu=document.getElementById('products-menu');
     function setMega(open){mega.classList.toggle('active',open);prodMenu.setAttribute('aria-expanded',String(open));}
     prodMenu.addEventListener('click',e=>{e.stopPropagation();setMega(!mega.classList.contains('active'));});
@@ -422,7 +659,7 @@
     document.querySelectorAll('.nav-main a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');mobToggle.setAttribute('aria-expanded','false');}));
     const backdrop=document.getElementById('modal-backdrop');const modal=document.getElementById('modal');const title=document.getElementById('modal-title');const content=document.getElementById('modal-content');
     let previousFocus=null;
-    function showModal(heading,html){previousFocus=document.activeElement;title.textContent=heading;content.innerHTML=html;backdrop.classList.add('open');document.body.style.overflow='hidden';modal.focus();}
+    function showModal(heading,html){previousFocus=document.activeElement;title.textContent=heading;content.innerHTML=html;backdrop.classList.add('open');document.body.style.overflow='hidden';translateDom(modal);modal.focus();}
     function closeModal(){backdrop.classList.remove('open');document.body.style.overflow='';if(previousFocus && typeof previousFocus.focus==='function')previousFocus.focus();}
     document.getElementById('modal-close').addEventListener('click',closeModal);
     document.getElementById('modal-done').addEventListener('click',closeModal);
@@ -443,6 +680,8 @@
     document.querySelectorAll('[data-info]').forEach(b=>b.addEventListener('click',()=>showModal('Demo note',`<p>${b.getAttribute('data-info')}</p>`)));
     const mode = new URLSearchParams(location.search).get('messenger') || 'workflow';
     if(mode==='workflow'||mode==='agentless'){const el=document.getElementById('mode-indicator');el.textContent=`Genesys QA · ${mode==='workflow'?'Workflow':'Agentless'} deployment`;el.classList.add('visible');}
+    document.querySelectorAll('[data-language-select]').forEach(function(btn) { btn.addEventListener('click', function() { setDemoLanguage(btn.getAttribute('data-language-select')); }); });
+    applyDemoLanguage();
   </script>
 </body>
 </html>
