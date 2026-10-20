@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Unofficial static Würth Canada inspired storefront demo for Genesys Messenger QA testing. Not a live online store.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Würth Canada | Storefront UI Demo</title>
+  <style>
+    :root { --red:#e3001b; --dark-red:#ba0016; --ink:#252525; --muted:#686868; --line:#dedede; --pale:#f5f5f5; --foot:#252525; --max:1312px; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; font-family:Arial,"Helvetica Neue",Helvetica,sans-serif; color:var(--ink); background:#fff; -webkit-font-smoothing:antialiased; }
+    button, input, select { font:inherit; }
+    button, a { -webkit-tap-highlight-color:transparent; }
+    button { cursor:pointer; }
+    a { color:inherit; text-decoration:none; }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline:3px solid #2579d1; outline-offset:2px; }
+    .wrap { width:min(var(--max),calc(100% - 60px)); margin-inline:auto; }
+    .utility-bar { height:28px; font-size:11px; color:#565656; border-bottom:1px solid #eee; background:#fff; }
+    .utility-bar .wrap { height:100%; display:flex; justify-content:flex-end; align-items:center; gap:18px; }
+    .utility-bar a:hover { color:var(--red); }
+    .demo-label { padding:2px 7px; font-size:9px; text-transform:uppercase; font-weight:800; color:#7d4b00; letter-spacing:.065em; background:#fff1d4; border:1px solid #f2d995; border-radius:3px; }
+    .sep { color:#bdbdbd; }
+    .header-main { background:white; }
+    .head-inner { min-height:88px; display:flex; align-items:center; gap:clamp(24px,4vw,72px); }
+    .brand { display:flex; align-items:center; gap:10px; flex-shrink:0; width:220px; }
+    .brand-mark { width:43px; height:43px; display:block; flex-shrink:0; }
+    .brand-type { display:flex; flex-direction:column; line-height:.86; }
+    .brand-type strong { color:#111; font-size:32px; letter-spacing:-2.0px; font-weight:900; }
+    .brand-type small { margin-top:8px; color:#252525; font-size:10px; text-align:right; letter-spacing:4px; font-weight:bold; }
+    .search-holder { flex:1; min-width:120px; }
+    .search { height:48px; display:flex; border:1px solid #c8c8c8; background:#fff; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.03); }
+    .search:focus-within { border-color:#777; box-shadow:0 0 0 2px rgba(227,0,27,.08); }
+    .search input { width:100%; min-width:0; flex:1; border:0; padding:0 18px; background:transparent; outline:0; font-size:13px; }
+    .search input::placeholder { color:#8b8b8b; }
+    .search button { flex-shrink:0; width:55px; display:grid; place-items:center; border:0; background:var(--red); color:#fff; transition:background .2s; }
+    .search button:hover { background:var(--dark-red); }
+    .search-icon { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:2.3; }
+    .head-actions { display:flex; align-items:center; justify-content:flex-end; gap:19px; }
+    .head-action { border:0; background:transparent; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:10px; white-space:nowrap; color:#3e3e3e; position:relative; }
+    .head-action:hover { color:var(--red); }
+    .head-action svg { width:25px; height:25px; stroke:currentColor; stroke-width:1.75; fill:none; }
+    .cart-count { position:absolute; top:-5px; right:1px; background:var(--red); color:#fff; width:17px; height:17px; font-size:10px; display:grid; place-items:center; font-weight:800; }
+    .mobile-nav-toggle { display:none; }
+    .topnav { background:#efefef; border-block:1px solid #e1e1e1; position:relative; z-index:15; }
+    .nav-inner { min-height:42px; display:flex; align-items:stretch; justify-content:space-between; }
+    .nav-main, .nav-other { display:flex; align-items:stretch; }
+    .nav-main a,.nav-main button,.nav-other a,.nav-other button { border:0; background:none; display:inline-flex; align-items:center; gap:5px; padding:0 20px; font-size:12px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; min-height:42px; }
+    .nav-main a:hover,.nav-main button:hover,.nav-other a:hover,.nav-other button:hover { color:var(--red); background:#e9e9e9; }
+    .nav-other a,.nav-other button { font-size:11px; color:#5a5a5a; font-weight:normal; text-transform:none; padding-inline:11px; }
+    .nav-other a:last-child { font-weight:bold; }
+    .nav-item { position:relative; }
+    .mega { position:absolute; top:100%; left:0; width:540px; padding:24px; background:white; border:1px solid #e7e7e7; box-shadow:0 14px 32px rgba(0,0,0,.16); display:none; z-index:40; }
+    .mega.active { display:block; }
+    .mega strong { display:block; font-size:14px; margin-bottom:14px; }
+    .mega ul { display:grid; grid-template-columns:1fr 1fr; gap:7px 14px; padding:0; margin:0; list-style:none; }
+    .mega li button { padding:7px; min-height:0; font-size:12px; line-height:1.3; color:#505050; text-align:left; text-transform:none; font-weight:normal; width:100%; }
+    .promo { min-height:39px; background:#747474; color:#fff; font-size:12px; display:flex; align-items:center; }
+    .promo .wrap { display:flex; justify-content:center; align-items:center; gap:14px; text-align:center; padding:8px 0; }
+    .promo b { font-weight:800; }
+    .promo em { font-style:normal; font-weight:bold; color:#ffe680; }
+    .promo button { border:1px solid #eee; background:#fff; padding:4px 12px; border-radius:16px; color:#333; font-size:10px; font-weight:bold; }
+    .promo button:hover { background:#fff0f0; }
+    .hero { padding-top:23px; padding-bottom:36px; }
+    .hero-cards { display:grid; grid-template-columns:1.38fr 1fr 1fr; gap:16px; }
+    .hero-card { height:225px; overflow:hidden; position:relative; isolation:isolate; }
+    .hero-card:before { content:""; position:absolute; width:350px; height:350px; border:1px solid rgba(255,255,255,.10); border-radius:100%; top:-190px; right:-140px; pointer-events:none; }
+    .hero-primary { background:linear-gradient(110deg,#ee001c 0%,#bb0018 85%); color:white; padding:25px 25px; }
+    .hero-kicker { font-size:10px; font-weight:800; letter-spacing:.08em; margin-bottom:14px; display:flex; align-items:center; gap:7px; }
+    .hero-kicker:before { content:""; width:24px; height:3px; background:currentColor; }
+    .hero-primary h1 { font-size:clamp(29px,3.1vw,48px); line-height:.99; letter-spacing:-1.4px; margin:0 0 12px; font-weight:900; max-width:310px; }
+    .hero-primary p { font-size:12px; line-height:1.45; max-width:260px; margin:0 0 16px; color:#ffedef; }
+    .hero-cta { display:inline-flex; align-items:center; gap:12px; font-weight:bold; font-size:11px; color:#202020; border:0; background:#fff; padding:10px 16px; position:relative; z-index:2; }
+    .hero-cta:hover { background:#faf0f0; }
+    .hero-tool { position:absolute; z-index:1; width:265px; height:225px; right:-32px; bottom:-5px; transform:rotate(-5deg); opacity:.98; filter:drop-shadow(0 13px 11px rgba(0,0,0,.28)); pointer-events:none; }
+    .hero-dark { background:linear-gradient(130deg,#242424,#121212); color:white; padding:25px; }
+    .hero-dark h2 { margin:0; position:relative; z-index:2; font-size:33px; letter-spacing:-.9px; line-height:1.02; font-weight:900; }
+    .hero-dark .offer { display:block; font-size:12px; font-weight:bold; color:#ff3348; margin:10px 0 13px; z-index:2; position:relative; }
+    .hero-dark .under-button { position:relative; z-index:2; border:1px solid #eee; background:#fff; color:#202020; font-size:11px; padding:8px 13px; font-weight:bold; }
+    .hero-dark .under-button:hover { background:#e3e3e3; }
+    .hero-spray { position:absolute; width:140px; height:190px; right:0; bottom:-23px; transform:rotate(12deg); opacity:.89; pointer-events:none; }
+    .hero-catalog { background:linear-gradient(135deg,#e4e4e4,#f3f3f3); padding:25px; }
+    .hero-catalog .redlabel { color:#d60018; font-size:11px; font-weight:800; letter-spacing:.14em; margin:0 0 9px; }
+    .hero-catalog h2 { color:#151515; margin:0; font-size:31px; line-height:1.03; font-weight:900; letter-spacing:-.8px; max-width:195px; position:relative; z-index:1; }
+    .hero-catalog p { margin-top:12px; font-size:11px; max-width:172px; line-height:1.4; position:relative; z-index:1; }
+    .hero-catalog button { background:var(--red); border:0; color:#fff; padding:9px 14px; font-size:10px; font-weight:bold; position:relative; z-index:1; }
+    .hero-catalog button:hover { background:#b00016; }
+    .catalog-book { position:absolute; right:-5px; bottom:-8px; width:140px; height:170px; transform:rotate(11deg); filter:drop-shadow(7px 8px 5px rgba(0,0,0,.2)); }
+    .section-rule { height:1px; background:#ececec; margin-bottom:30px; }
+    .section-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
+    .section-top h2 { font-size:22px; font-weight:800; letter-spacing:.015em; margin:0; }
+    .section-top span { color:#969696; font-size:12px; }
+    .cat-area { padding-bottom:45px; }
+    .cat-layout { display:grid; grid-template-columns:229px minmax(0,1fr); gap:20px; align-items:start; }
+    .benefit-panel { background:#f0f0f0; border:1px solid #ebebeb; min-height:439px; padding:22px 20px; }
+    .benefit-panel .badge-icon { width:34px; height:34px; background:#df001b; display:grid; place-items:center; margin-bottom:16px; }
+    .benefit-panel .badge-icon svg { width:19px; height:19px; }
+    .benefit-panel h3 { margin:0 0 8px; font-size:17px; line-height:1.32; font-weight:700; }
+    .benefit-panel p { margin:0; font-size:12px; line-height:1.55; color:#515151; }
+    .benefit-panel ul { padding-left:16px; font-size:12px; line-height:1.6; color:#454545; margin:15px 0 20px; }
+    .benefit-panel li { margin-bottom:8px; }
+    .redbtn { background:var(--red); border:1px solid var(--red); color:#fff; font-size:11px; font-weight:bold; padding:11px 18px; transition:background .15s; }
+    .redbtn:hover { background:var(--dark-red); }
+    .grid-side { min-width:0; }
+    .search-feedback { display:none; background:#fff9f9; font-size:12px; padding:12px 16px; border-left:3px solid var(--red); margin-bottom:14px; }
+    .categories { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:11px; }
+    .category { min-width:0; background:#fff; border:1px solid #e6e6e6; border-radius:1px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:15px 9px 13px; height:160px; text-align:center; transition:box-shadow .18s,border-color .18s,transform .18s; }
+    .category:hover,.category:focus-visible { border-color:#cecece; box-shadow:0 4px 15px rgba(0,0,0,.09); transform:translateY(-2px); }
+    .category:active { transform:translateY(0); }
+    .category-art { width:100%; max-width:134px; height:99px; margin-bottom:8px; object-fit:contain; }
+    .category-name { display:block; font-size:11px; line-height:1.3; font-weight:600; min-height:28px; color:#303030; }
+    .no-results { display:none; grid-column:1/-1; border:1px dashed #ccc; padding:28px; text-align:center; color:#666; font-size:14px; }
+    .features { padding:3px 0 54px; }
+    .features h2 { text-align:center; font-size:23px; margin:0 0 25px; }
+    .feature-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+    .feature { display:flex; align-items:center; gap:15px; min-height:104px; border:1px solid #e5e5e5; padding:18px 17px; text-align:left; background:#fff; transition:box-shadow .2s; }
+    .feature:hover { box-shadow:0 5px 17px rgba(0,0,0,.08); }
+    .feature .feature-glyph { width:48px; height:48px; display:grid; place-items:center; flex-shrink:0; color:var(--red); background:#ffedf0; border-radius:50%; }
+    .feature-glyph svg { width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .feature strong { display:block; font-size:17px; color:#1d1d1d; font-weight:750; margin-bottom:5px; }
+    .feature small { display:block; color:#777; font-size:11px; line-height:1.45; }
+    .feature .arr { margin-left:auto; align-self:center; color:#aaa; font-size:18px; }
+    .trust { background:#f3f3f3; border-top:1px solid #e5e5e5; }
+    .trust-inner { display:flex; justify-content:space-between; gap:22px; padding:24px 0; }
+    .trust-item { display:flex; align-items:center; gap:11px; color:#777; font-size:12px; }
+    .trust-item svg { width:24px; height:24px; stroke:#b40013; stroke-width:1.7; fill:none; }
+    .trust-item strong { display:block; font-size:12px; color:#333; margin-bottom:4px; }
+    footer { background:#262626; color:#fff; }
+    .footer-main { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:34px; padding-top:49px; padding-bottom:45px; }
+    .footer-main h3 { font-size:13px; letter-spacing:.03em; margin:0 0 22px; font-weight:800; }
+    .footer-links { padding:0; margin:0; list-style:none; display:flex; flex-direction:column; gap:11px; }
+    .footer-links button,.footer-links a { border:0; background:transparent; padding:0; color:#c8c8c8; font-size:12px; text-align:left; }
+    .footer-links button:hover,.footer-links a:hover { color:white; text-decoration:underline; }
+    .foot-bottom { border-top:1px solid #454545; padding:20px 0 22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:11px; color:#a8a8a8; }
+    .foot-bottom a { text-decoration:underline; text-underline-offset:2px; }
+    .demo-disclaimer { border-top:1px solid #4a4a4a; background:#171717; text-align:center; font-size:11px; color:#cecece; padding:11px 15px; }
+    .demo-disclaimer strong { color:#f7d1d6; }
+    .modal-backdrop { display:none; z-index:90; position:fixed; inset:0; background:rgba(0,0,0,.55); justify-content:center; align-items:center; padding:18px; }
+    .modal-backdrop.open { display:flex; }
+    .modal { position:relative; background:#fff; width:min(100%,560px); box-shadow:0 18px 65px rgba(0,0,0,.3); max-height:85vh; overflow:auto; padding:32px; }
+    .modal h2 { margin:0 0 10px; font-size:23px; }
+    .modal p { font-size:14px; line-height:1.55; color:#5a5a5a; }
+    .modal .close { position:absolute; top:12px; right:14px; width:30px; height:30px; border:0; background:#f3f3f3; font-size:20px; }
+    .modal .close:hover { background:#dedede; }
+    .demo-note { background:#fff3da; border-left:3px solid #df9a00; padding:11px 13px; font-size:12px; color:#6f4f09; line-height:1.5; margin:18px 0 0; }
+    .modal-actions { margin-top:22px; }
+    .quick-order { display:grid; grid-template-columns:1fr 100px; gap:8px; margin:18px 0; }
+    .quick-order input { border:1px solid #cfcfcf; padding:10px; min-width:0; font-size:12px; }
+    .quick-order-label { font-size:11px; font-weight:bold; }
+    .modal-action { padding:11px 20px; background:var(--red); border:0; color:white; font-size:12px; font-weight:bold; }
+    .modal-action:hover { background:var(--dark-red); }
+    .mode-indicator { position:fixed; left:14px; bottom:14px; z-index:20; font-size:10px; background:rgba(29,29,29,.9); border:1px solid #555; color:#fff; padding:8px 10px; border-radius:3px; display:none; pointer-events:none; }
+    .mode-indicator.visible { display:block; }
+    @media (max-width:1200px) {
+      .head-inner { gap:25px; } .brand { width:190px; }
+      .categories { grid-template-columns:repeat(4,minmax(0,1fr)); }
+      .cat-layout { grid-template-columns:205px minmax(0,1fr); }
+      .hero-cards { grid-template-columns:1.2fr 1fr 1fr; }
+      .hero-tool { right:-85px; opacity:.7; }
+      .hero-primary h1 { font-size:38px; }
+      .hero-dark h2 { font-size:29px; }
+    }
+    @media (max-width:900px) {
+      .wrap { width:min(100% - 30px, var(--max)); }
+      .head-inner { gap:20px; min-height:80px; }
+      .brand { width:auto; }
+      .brand-type strong { font-size:25px; } .brand-type small { font-size:8px; margin-top:7px; }
+      .brand-mark { width:34px; height:34px; }
+      .head-actions { gap:6px; }
+      .head-action span:not(.cart-count) { display:none; }
+      .nav-other { display:none; }
+      .nav-main a,.nav-main button { padding-inline:14px; }
+      .hero-cards { grid-template-columns:1.5fr 1fr; }
+      .hero-catalog { display:none; }
+      .cat-layout { grid-template-columns:1fr; }
+      .benefit-panel { min-height:0; display:grid; align-items:center; grid-template-columns:auto 1fr auto; gap:15px; padding:18px; }
+      .benefit-panel .badge-icon { margin:0; }
+      .benefit-panel h3 { margin:0; } .benefit-panel p,.benefit-panel ul { display:none; }
+      .categories { grid-template-columns:repeat(4,minmax(0,1fr)); }
+      .feature-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .trust-inner { flex-wrap:wrap; }
+    }
+    @media (max-width:600px) {
+      .utility-bar .wrap { gap:9px; } .utility-bar .help { display:none; }
+      .head-inner { flex-wrap:wrap; padding-block:14px; gap:14px; }
+      .brand { margin-right:auto; }
+      .head-action { padding:5px; }
+      .search-holder { order:3; flex-basis:100%; }
+      .search { height:43px; } .search button { width:48px; }
+      .mobile-nav-toggle { display:flex; border:0; background:transparent; padding:0 15px; gap:8px; align-items:center; font-size:12px; text-transform:uppercase; font-weight:800; min-height:42px; }
+      .nav-inner { display:block; }
+      .nav-main { display:none; flex-direction:column; align-items:stretch; }
+      .nav-inner.open .nav-main { display:flex; }
+      .nav-main a,.nav-main button { padding:0 15px; width:100%; justify-content:flex-start; }
+      .nav-item { width:100%; }
+      .mega { position:static; width:100%; box-shadow:none; padding:15px; }
+      .promo { font-size:11px; line-height:1.35; }
+      .hero { padding-top:14px; padding-bottom:25px; }
+      .hero-cards { grid-template-columns:1fr; gap:12px; }
+      .hero-card { height:210px; }
+      .hero-primary h1 { font-size:40px; }
+      .hero-tool { right:0; width:220px; opacity:.65; }
+      .hero-dark h2 { font-size:33px; }
+      .hero-spray { right:5px; }
+      .section-top h2 { font-size:19px; }
+      .categories { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+      .category { height:151px; }
+      .category-art { height:92px; }
+      .benefit-panel { grid-template-columns:auto 1fr; }
+      .benefit-panel .redbtn { grid-column:1/-1; }
+      .feature-grid { grid-template-columns:1fr; }
+      .feature { min-height:85px; }
+      .trust-inner { display:grid; grid-template-columns:1fr 1fr; }
+      .footer-main { grid-template-columns:1fr 1fr; gap:30px 18px; }
+      .modal { padding:27px 20px; }
+      .foot-bottom { display:block; line-height:2; }
+    }
+    @media (prefers-reduced-motion:reduce) { *, *:before, *:after { scroll-behavior:auto!important; transition-duration:.01ms!important; } }
+  </style>
+  <script>
+    /* The two approved test deployments are configured only when ?messenger=workflow or ?messenger=agentless is supplied.
+       Static HTML contains no Genesys credentials. Publishing a widget requires the GitHub Pages domain to be allowed in Genesys. */
+    (function () {
+      const selected = new URLSearchParams(location.search).get('messenger') || 'workflow';
+      const deployments = {
+        workflow: '6a53952b-8362-40b3-a5f2-d436a3a5d2f8',
+        agentless: '7e8ae919-d461-41d6-bc7c-f64f68447ceb'
+      };
+      if (!Object.prototype.hasOwnProperty.call(deployments, selected)) return;
+      window._genesysJs = 'Genesys';
+      window.Genesys = window.Genesys || function () {(window.Genesys.q = window.Genesys.q || []).push(arguments);};
+      window.Genesys.t = 1 * new Date();
+      window.Genesys.c = { environment: 'prod-cac1', deploymentId: deployments[selected] };
+      const script = document.createElement('script');
+      script.async = true;
+      script.charset = 'utf-8';
+      script.src = 'https://apps.cac1.pure.cloud/genesys-bootstrap/genesys.min.js';
+      document.head.appendChild(script);
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <div class="utility-bar"><div class="wrap">
+      <span class="demo-label">Unofficial QA demo</span>
+      <span class="help">Need Help? Call 1-800-263-5002</span>
+      <span><b>EN</b> <span class="sep">|</span> <button style="background:none;border:0;font-size:11px;color:#777;padding:0;" type="button" data-info="French-language shopping is not implemented in this static demo.">FR</button></span>
+    </div></div>
+    <div class="header-main"><div class="wrap head-inner">
+      <a class="brand" href="#top" aria-label="Würth Canada storefront demo home">
+        <svg class="brand-mark" viewBox="0 0 50 50" aria-hidden="true"><path d="M4 4H20V13H30V4H46V24H4Z" fill="#e3001b"/><path d="M4 29H46V36L25 48L4 36Z" fill="#e3001b"/><path d="M20 29H30V38H20Z" fill="#fff"/></svg>
+        <span class="brand-type"><strong>WÜRTH</strong><small>CANADA</small></span>
+      </a>
+      <div class="search-holder"><form class="search" id="search-form" role="search">
+        <input id="site-search" type="search" name="search" placeholder="What are you searching for?" autocomplete="off" aria-label="Search product categories">
+        <button type="submit" aria-label="Search"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l6 6"/></svg></button>
+      </form></div>
+      <div class="head-actions">
+        <button class="head-action" type="button" data-modal="quickorder" aria-label="Open quick order pad"><svg viewBox="0 0 24 24"><path d="M3 4h18v15H3zM3 9h18M9 9v10M15 9v10M7 6h3"/></svg><span>Quick order</span></button>
+        <button class="head-action" type="button" data-modal="account" aria-label="Account information"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-5 3-8 8-8s8 3 8 8"/></svg><span>Register | Login</span></button>
+        <button class="head-action" type="button" data-modal="cart" aria-label="Open demo cart"><svg viewBox="0 0 24 24"><path d="M2 3h3l3 13h12l3-10H6M10 21h.1M19 21h.1"/></svg><span>View cart</span><span class="cart-count">0</span></button>
+      </div>
+    </div></div>
+    <nav class="topnav" aria-label="Primary navigation"><div class="wrap nav-inner" id="nav-inner">
+      <button class="mobile-nav-toggle" type="button" id="mobile-nav-toggle" aria-expanded="false">☰ Menu</button>
+      <div class="nav-main">
+        <div class="nav-item"><button id="products-menu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mega-menu">Products <span aria-hidden="true">⌄</span></button>
+          <div class="mega" id="mega-menu" role="region" aria-label="Product categories"><strong>Shop by category</strong><ul id="mega-categories"></ul></div>
+        </div>
+        <a href="#categories">Catalogue</a>
+        <a href="#shortcuts">Solutions</a>
+        <a href="#shortcuts">Stores</a>
+        <button type="button" data-modal="about">Why Us</button>
+        <button type="button" data-modal="quickorder">Profit Tools</button>
+      </div>
+      <div class="nav-other"><button type="button" data-modal="account">Register | Login</button></div>
+    </div></nav>
+  </header>
+  <main id="top">
+    <div class="promo"><div class="wrap"><span><b>LIMITED TIME:</b> Explore professional-grade tools and supplies. For current offers visit the live store.</span><button type="button" data-modal="offer">Details</button></div></div>
+    <section class="wrap hero" aria-label="Featured campaigns">
+      <div class="hero-cards">
+        <article class="hero-card hero-primary">
+          <div class="hero-kicker">WÜRTH CANADA</div>
+          <h1>BUILT FOR<br>THE JOB.</h1>
+          <p>Fasteners, tools and supplies for the work that matters.</p>
+          <a class="hero-cta" href="#categories">EXPLORE PRODUCTS <span aria-hidden="true">↗</span></a>
+          <svg class="hero-tool" viewBox="0 0 310 260" aria-hidden="true"><g transform="translate(20 12) rotate(-8 155 120)">
+            <ellipse cx="190" cy="227" rx="96" ry="15" fill="#340008" opacity=".18"/>
+            <path d="M56 64 L124 53 L204 57 L235 71 L241 109 L222 131 L146 137 L93 119 L58 112 Z" fill="#191919" stroke="#333" stroke-width="4"/>
+            <path d="M81 66 L119 61 L178 64 L176 107 L121 114 L84 105Z" fill="#444"/>
+            <path d="M90 77H154V88H90Z" fill="#d10a22"/><text x="95" y="85" font-size="8" font-family="Arial" fill="white" font-weight="bold">WÜRTH</text>
+            <path d="M203 66h37c14 0 21 11 21 21s-9 15-21 15h-35Z" fill="#282828" stroke="#3b3b3b" stroke-width="4"/>
+            <path d="M247 80h31v10h-31Z" fill="#c3c3c3"/><path d="M277 81h21v8h-21Z" fill="#555"/>
+            <path d="M115 111l54 4-6 78h-45l-26-37 8-38Z" fill="#262626"/><path d="M93 118l27-1 13 47-17 15-31-37Z" fill="#d50a22"/>
+            <path d="M111 171h61l16 22v39H93v-39Z" fill="#1e1e1e" stroke="#5c5c5c" stroke-width="3"/>
+            <path d="M97 194h85v17H97Z" fill="#cb0a21"/><path d="M99 218h88v10H99Z" fill="#3f3f3f"/>
+            <path d="M68 76v27M75 70v41M186 72v35" stroke="#555" stroke-width="3"/><path d="M168 84l25 13" stroke="#b20b1c" stroke-width="6"/>
+          </g></svg>
+        </article>
+        <article class="hero-card hero-dark"><div class="hero-kicker">WORKSHOP ESSENTIALS</div><h2>TOOLS THAT<br>DELIVER.</h2><span class="offer">PROFESSIONAL QUALITY</span><a class="under-button" href="#categories">BROWSE TOOLS →</a>
+          <svg class="hero-spray" viewBox="0 0 160 230" aria-hidden="true"><ellipse cx="75" cy="209" rx="45" ry="7" fill="#060606" opacity=".4"/><g transform="rotate(8 80 120)"><rect x="53" y="35" width="55" height="165" rx="7" fill="#c2c2c2"/><rect x="54" y="18" width="53" height="28" rx="4" fill="#202020"/><rect x="58" y="23" width="45" height="4" fill="#505050"/><rect x="54" y="61" width="53" height="73" fill="#d90019"/><rect x="58" y="70" width="45" height="14" fill="#fafafa"/><text x="61" y="80" font-size="11" font-family="Arial" font-weight="900" fill="#191919">WÜRTH</text><text x="62" y="102" font-size="8" font-family="Arial" fill="#fff">INDUSTRIAL</text><text x="63" y="111" font-size="8" font-family="Arial" fill="#fff">SUPPLIES</text><rect x="55" y="144" width="52" height="50" fill="#262626"/><rect x="65" y="162" width="32" height="5" fill="#707070"/></g></svg>
+        </article>
+        <article class="hero-card hero-catalog"><div class="redlabel">YOUR WORK. OUR WORLD.</div><h2>MASTER<br>CATALOGUE.</h2><p>Explore a wide range of professional products.</p><a href="#categories" style="display:inline-block;background:var(--red);color:white;padding:9px 13px;font-size:10px;font-weight:800">VIEW CATEGORIES →</a>
+          <svg class="catalog-book" viewBox="0 0 150 190" aria-hidden="true"><path d="M19 12L122 7L136 159L30 169Z" fill="#fff" stroke="#aaa" stroke-width="2"/><path d="M19 12L31 169L18 165L8 20Z" fill="#747474"/><path d="M29 23L117 20L125 142L40 151Z" fill="#d90019"/><path d="M38 35L110 32L111 40L40 44Z" fill="white" opacity=".8"/><path d="M43 52H113V100H43Z" fill="#232323"/><path d="M43 108H113V111H43ZM43 118H102V121H43ZM43 128H107V131H43Z" fill="white"/><text x="51" y="80" fill="white" font-size="14" font-weight="900" font-family="Arial">WÜRTH</text></svg>
+        </article>
+      </div>
+    </section>
+    <section class="wrap cat-area" id="categories" aria-label="Product categories">
+      <div class="section-rule"></div><div class="section-top"><h2>PRODUCT CATEGORIES</h2><span id="category-count">20 categories</span></div>
+      <div class="cat-layout">
+        <aside class="benefit-panel"><div class="badge-icon"><svg viewBox="0 0 24 24"><path fill="#fff" d="M3 3h7v5h4V3h7v9H3zm0 12h18v3l-9 5-9-5z"/></svg></div>
+          <h3>How can your business benefit from Würth?</h3>
+          <p>Discover convenient tools designed to make purchasing supplies easier for professional customers.</p>
+          <ul><li>View and manage invoices</li><li>Access your order history</li><li>Find the supplies you need</li><li>Get support from specialists</li><li>Explore business solutions</li></ul>
+          <button class="redbtn" type="button" data-modal="account">REGISTER</button>
+        </aside>
+        <div class="grid-side"><div class="search-feedback" id="search-feedback" role="status"></div><div class="categories" id="categories-grid"><div class="no-results" id="no-results">No matching categories found. Try searching for “tools”, “fasteners”, or “safety”.</div></div></div>
+      </div>
+    </section>
+    <section class="wrap features" id="shortcuts"><h2>More ways to shop</h2><div class="feature-grid">
+      <button class="feature" type="button" data-modal="new"><span class="feature-glyph"><svg viewBox="0 0 24 24"><path d="m12 2 2.8 6.2L22 9l-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.3L2 9l7.2-.8z"/></svg></span><span><strong>New</strong><small>Discover what's new in our range</small></span><span class="arr">›</span></button>
+      <button class="feature" type="button" data-modal="deals"><span class="feature-glyph"><svg viewBox="0 0 24 24"><path d="m3 12 9-9h8v8l-9 10z"/><circle cx="16.5" cy="7.5" r="1.5"/></svg></span><span><strong>Hot Deals</strong><small>Explore seasonal savings</small></span><span class="arr">›</span></button>
+      <button class="feature" type="button" data-modal="clearance"><span class="feature-glyph"><svg viewBox="0 0 24 24"><path d="M4 8V4h16v4M5 8h14l-1 12H6zM9 13h6"/></svg></span><span><strong>Clearance</strong><small>Browse end-of-line selections</small></span><span class="arr">›</span></button>
+      <button class="feature" type="button" data-modal="email"><span class="feature-glyph"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="1"/><path d="m2 6 10 8 10-8"/></svg></span><span><strong>Email Sign Up</strong><small>Stay in the loop with new offers</small></span><span class="arr">›</span></button>
+    </div></section>
+    <div class="trust"><div class="wrap trust-inner">
+      <div class="trust-item"><svg viewBox="0 0 24 24"><path d="M3 8h11v9H3zM14 11h4l3 3v3h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg><span><strong>Across Canada</strong>Nationwide availability</span></div>
+      <div class="trust-item"><svg viewBox="0 0 24 24"><path d="m12 2 8 3v6c0 6-3.8 9.1-8 11-4.2-1.9-8-5-8-11V5z"/><path d="m8 12 3 3 5-6"/></svg><span><strong>Professional Quality</strong>Products for demanding work</span></div>
+      <div class="trust-item"><svg viewBox="0 0 24 24"><path d="M4 19v-4a8 8 0 0 1 16 0v4M4 15H2v5h4v-5zm14 0h4v5h-4z"/></svg><span><strong>Product Support</strong>Help finding the right solution</span></div>
+      <div class="trust-item"><svg viewBox="0 0 24 24"><path d="m12 3 8 5v9l-8 5-8-5V8zM4 8l8 5 8-5M12 13v9"/></svg><span><strong>Broad Selection</strong>Industrial & automotive supplies</span></div>
+    </div></div>
+  </main>
+  <footer><div class="wrap footer-main">
+    <div><h3>COMPANY</h3><ul class="footer-links"><li><button type="button" data-modal="about">About us</button></li><li><button type="button" data-modal="about">The Würth Group</button></li><li><button type="button" data-modal="about">Quality and ISO 9001</button></li><li><button type="button" data-modal="about">Careers</button></li><li><button type="button" data-modal="about">Sustainability</button></li></ul></div>
+    <div><h3>SERVICES & SOLUTIONS</h3><ul class="footer-links"><li><button type="button" data-modal="about">National Accounts</button></li><li><button type="button" data-modal="about">Electronic Procurement</button></li><li><button type="button" data-modal="about">Inventory Solutions</button></li><li><button type="button" data-modal="about">Online Customer Tools</button></li><li><button type="button" data-modal="about">Professional Services</button></li></ul></div>
+    <div><h3>SHOPPING TOOLS</h3><ul class="footer-links"><li><a href="#categories">Master catalogue</a></li><li><button type="button" data-modal="about">System cases</button></li><li><button type="button" data-modal="about">Sealants</button></li><li><button type="button" data-modal="about">Made in Canada</button></li><li><button type="button" data-modal="about">Product information</button></li></ul></div>
+    <div><h3>CUSTOMER SUPPORT</h3><ul class="footer-links"><li><button type="button" data-modal="about">Contact</button></li><li><button type="button" data-modal="about">FAQ</button></li><li><button type="button" data-modal="email">Email Sign Up</button></li><li><button type="button" data-modal="about">Company Locations</button></li><li><a href="https://shop.wurth.ca/" rel="noopener noreferrer" target="_blank">Visit official Würth Canada shop ↗</a></li></ul></div>
+  </div><div class="wrap foot-bottom"><span>Storefront layout inspired by Würth Canada. This page is an independently built test UI.</span><span><a href="https://shop.wurth.ca/" target="_blank" rel="noopener noreferrer">Official shop</a> &nbsp;·&nbsp; QA demo only</span></div>
+  <div class="demo-disclaimer"><strong>TEST PAGE — NOT THE OFFICIAL WÜRTH STORE.</strong> No account access, transactions, orders, payments or email subscriptions are processed on this page.</div></footer>
+  <div class="modal-backdrop" id="modal-backdrop" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1" id="modal"><button type="button" class="close" id="modal-close" aria-label="Close">×</button><h2 id="modal-title"></h2><div id="modal-content"></div><div class="modal-actions"><button type="button" class="modal-action" id="modal-done">Close</button></div></section></div>
+  <div id="mode-indicator" class="mode-indicator" aria-hidden="true"></div>
+  <script>
+    const categories = [
+      {name:'Abrasives', art:'disc', search:'grinding cutting discs sanding paper'},
+      {name:'Adhesives & Tapes', art:'tube', search:'glue adhesive tape bonding'},
+      {name:'Anchors', art:'bolts', search:'fasteners wall anchors bolts'},
+      {name:'Auto Bulbs & Work Lights', art:'light', search:'lights vehicle lamps bulbs'},
+      {name:'Cleaning, Detailing & Sanitation', art:'bottle', search:'cleaning detailing spray wash'},
+      {name:'Cutting', art:'saw', search:'cutting blades saw knives'},
+      {name:'Electrical', art:'wires', search:'electrical wires connectors circuits'},
+      {name:'Equipment & Storage', art:'box', search:'storage box drawers equipment'},
+      {name:'Fasteners', art:'bolts', search:'bolts nuts screws rivets fasteners'},
+      {name:'Fittings, Hoses & Tubing', art:'hose', search:'pipe fittings hoses tubing'},
+      {name:'Lubricants & Greases', art:'cans', search:'spray grease lubrication oil'},
+      {name:'ORSY Systems & Solutions', art:'drawers', search:'orsy storage shelving'},
+      {name:'Paints & Primers', art:'cans', search:'paint coating primer spray'},
+      {name:'Power Tools', art:'drill', search:'power drill electric cordless tools'},
+      {name:'Rust Proofing & Rust Remover', art:'cans', search:'rust undercoating sprays remover'},
+      {name:'Safety Supplies & First Aid', art:'safety', search:'helmet gloves safety protective first aid'},
+      {name:'Sealants, O-Rings', art:'tube', search:'silicone caulking seals o-rings'},
+      {name:'Tools', art:'tools', search:'ratchet hammer screwdriver wrench hand tools'},
+      {name:'Vehicle Repair & Components', art:'auto', search:'automotive vehicle parts brakes repairs'},
+      {name:'Welding Supplies', art:'weld', search:'welding torch helmet supplies'}
+    ];
+    const artSvg = {
+      disc:`<circle cx="81" cy="62" r="34" fill="#333"/><circle cx="81" cy="62" r="29" fill="#b8202d"/><circle cx="81" cy="62" r="15" fill="#b4bac0"/><circle cx="81" cy="62" r="7" fill="#f4f5f6"/><circle cx="112" cy="47" r="29" fill="#303539" stroke="#f03b43" stroke-width="6"/><circle cx="112" cy="47" r="12" fill="#dee1e4"/><circle cx="112" cy="47" r="5" fill="#fff"/>`,
+      tube:`<g transform="rotate(-14 55 60)"><rect x="36" y="21" width="35" height="72" rx="4" fill="#f1f1f1" stroke="#c7c7c7"/><rect x="38" y="34" width="31" height="30" fill="#d40c21"/><rect x="42" y="28" width="22" height="4" fill="#777"/><rect x="43" y="74" width="21" height="3" fill="#aaa"/><rect x="46" y="90" width="15" height="9" fill="#b9b9b9"/></g><g transform="rotate(12 100 60)"><rect x="82" y="19" width="37" height="78" rx="4" fill="#e9eaeb" stroke="#b8b8b8"/><rect x="84" y="45" width="33" height="33" fill="#d20a1b"/><rect x="89" y="53" width="21" height="4" fill="#fff"/><rect x="95" y="4" width="10" height="18" fill="#c3c3c3"/><path d="M95 5L100 -2 105 5" fill="#c3c3c3"/></g>`,
+      bolts:`<g transform="rotate(-15 55 58)"><rect x="44" y="21" width="20" height="66" rx="2" fill="#abb2b9"/><path d="M43 28h22M43 37h22M43 46h22M43 55h22M43 64h22M43 73h22" stroke="#646b73" stroke-width="2"/><rect x="38" y="12" width="32" height="19" rx="4" fill="#697178"/></g><g transform="rotate(15 110 58)"><rect x="96" y="24" width="15" height="65" fill="#c5ccd0"/><path d="M96 37h15M96 45h15M96 53h15M96 61h15M96 69h15M96 77h15" stroke="#7b8588" stroke-width="2"/><rect x="87" y="13" width="33" height="18" rx="4" fill="#737e84"/></g><polygon points="106,82 120,74 135,83 136,96 120,103 106,95" fill="#a9b3bb"/><circle cx="121" cy="89" r="6" fill="white"/>`,
+      light:`<circle cx="69" cy="52" r="24" fill="#f3cc73" stroke="#d1ac59" stroke-width="3"/><path d="M53 65L84 65L79 90H59Z" fill="#b6bfc3"/><path d="M59 84h20M59 90h20" stroke="#707c7f" stroke-width="3"/><path d="M62 38L78 51L62 53L77 67" stroke="#fff7b3" stroke-width="4" fill="none"/><g transform="rotate(12 112 68)"><rect x="97" y="41" width="33" height="47" rx="6" fill="#30363a"/><rect x="102" y="47" width="23" height="27" rx="3" fill="#f6d66f"/><rect x="103" y="82" width="21" height="5" fill="#ba0b22"/></g>`,
+      bottle:`<rect x="59" y="36" width="55" height="66" rx="8" fill="#f8f8f8" stroke="#bdc4c5" stroke-width="3"/><rect x="62" y="52" width="50" height="33" fill="#da001d"/><rect x="66" y="60" width="42" height="5" fill="white"/><path d="M73 36v-13h28v13" fill="#c9d0d4"/><rect x="83" y="13" width="25" height="10" rx="2" fill="#252525"/><path d="M84 14H63V8H88L94 14" fill="#333"/><path d="M63 8L57 16L70 16" fill="#555"/><path d="M77 89h25" stroke="#aaa" stroke-width="4"/>`,
+      saw:`<circle cx="83" cy="61" r="39" fill="#bfc5c9" stroke="#848d92" stroke-width="2"/><circle cx="83" cy="61" r="25" fill="#e7eaec"/><circle cx="83" cy="61" r="8" fill="#777f83"/><path d="M83 22l4 7 8-6 2 9 10-4-1 10 11-1-4 10 10 3-7 8 9 6-10 5 7 8-11 3 2 10-11-1-1 10-10-4-3 9-8-7-7 7-5-9-9 6-2-10-10 1 3-10-10-4 7-8-8-7 9-5-6-8 10-3-1-10 11 1 2-10 9 5z" fill="none" stroke="#999" stroke-width="1.5"/><circle cx="124" cy="45" r="17" fill="#e32b3e"/><circle cx="124" cy="45" r="7" fill="#e2e2e2"/>`,
+      wires:`<path d="M33 85C61 20 72 16 88 37S108 92 146 26" stroke="#d00820" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M42 89C72 36 90 33 104 49S122 87 148 47" stroke="#373d42" stroke-width="9" fill="none" stroke-linecap="round"/><rect x="24" y="75" width="26" height="17" rx="3" fill="#cbcbc8"/><rect x="140" y="18" width="20" height="16" rx="3" fill="#dedede"/><rect x="143" y="44" width="18" height="14" rx="3" fill="#d3d3d3"/>`,
+      box:`<rect x="36" y="36" width="109" height="60" rx="8" fill="#b80017" stroke="#6f0e1e" stroke-width="3"/><rect x="36" y="51" width="109" height="18" fill="#e51b35"/><rect x="77" y="58" width="27" height="13" rx="2" fill="#333"/><path d="M67 36V24Q67 18 74 18H107Q114 18 114 24V36" stroke="#303030" stroke-width="8" fill="none"/><rect x="46" y="79" width="88" height="4" fill="#ed6573"/>`,
+      hose:`<circle cx="84" cy="61" r="31" fill="none" stroke="#242a2b" stroke-width="11"/><circle cx="84" cy="61" r="19" fill="none" stroke="#414a4c" stroke-width="10"/><circle cx="84" cy="61" r="7" fill="#fff" stroke="#7a7f82" stroke-width="5"/><path d="M103 81L133 87L145 68" stroke="#252b2e" stroke-width="10" fill="none"/><rect x="134" y="62" width="17" height="22" rx="2" fill="#b6bfc1"/><path d="M137 62v22m7-22v22" stroke="#858b90" stroke-width="2"/>`,
+      cans:`<rect x="48" y="27" width="35" height="72" rx="5" fill="#d7d7d7" stroke="#bcbcbc"/><rect x="50" y="20" width="31" height="15" rx="2" fill="#2b2b2b"/><rect x="49" y="40" width="33" height="38" fill="#e0001c"/><rect x="55" y="48" width="20" height="6" fill="white"/><rect x="55" y="67" width="20" height="3" fill="white"/><rect x="94" y="18" width="39" height="81" rx="5" fill="#dedede" stroke="#c1c1c1"/><rect x="96" y="11" width="35" height="16" rx="3" fill="#303030"/><rect x="95" y="33" width="37" height="43" fill="#1f2224"/><rect x="99" y="42" width="29" height="22" fill="#d20a20"/><rect x="102" y="48" width="23" height="4" fill="white"/>`,
+      drawers:`<rect x="34" y="17" width="117" height="82" rx="3" fill="#4a4f50"/><g fill="#e0e2e1" stroke="#7d8383" stroke-width="1"><rect x="41" y="24" width="31" height="20"/><rect x="77" y="24" width="31" height="20"/><rect x="113" y="24" width="31" height="20"/><rect x="41" y="49" width="31" height="20"/><rect x="77" y="49" width="31" height="20"/><rect x="113" y="49" width="31" height="20"/><rect x="41" y="74" width="31" height="19"/><rect x="77" y="74" width="31" height="19"/><rect x="113" y="74" width="31" height="19"/></g><g stroke="#cc0018" stroke-width="3"><path d="M50 36h14M86 36h14M121 36h14M50 61h14M86 61h14M121 61h14M50 84h14M86 84h14M121 84h14"/></g>`,
+      drill:`<path d="M42 30L107 29L128 42V65L96 71L70 61L41 62Z" fill="#262b2e"/><path d="M45 38h49v20H45Z" fill="#d80b26"/><path d="M97 37h22v14H97Z" fill="#42484b"/><path d="M127 44h27v13h-27Z" fill="#aeb8bb"/><path d="M152 47h18v7h-18Z" fill="#777"/><path d="M71 64L93 67L91 99H67L56 77Z" fill="#24282a"/><path d="M52 78h52v19H52Z" fill="#d10923"/><path d="M52 93h52v7H52Z" fill="#292929"/><path d="M63 35h21" stroke="white" stroke-width="4"/>`,
+      safety:`<path d="M42 78a44 44 0 0 1 88 0H42Z" fill="#efba34" stroke="#c68a18" stroke-width="3"/><path d="M79 32v48M94 33v47M50 65h70" stroke="#d69620" stroke-width="4"/><path d="M39 81h97v9H39Z" fill="#4e5152"/><path d="M117 27l25 5-5 32-13-2Z" fill="#eeeff0" stroke="#b0b0b0" stroke-width="3"/><path d="M122 41h13M122 47h13" stroke="#d3001d" stroke-width="3"/>`,
+      tools:`<g transform="rotate(-22 58 70)"><path d="M46 11a22 22 0 0 0-4 32l-5 53 18 1 5-54a22 22 0 0 0 0-33L55 27H44Z" fill="#8d989e"/><path d="M42 42l18 3" stroke="#677177" stroke-width="3"/></g><g transform="rotate(24 119 60)"><rect x="108" y="29" width="18" height="70" rx="5" fill="#d40920"/><path d="M108 39v-20a15 15 0 0 1 20 0v20" fill="#777f80"/><path d="M116 69v20" stroke="#eee" stroke-width="4"/></g>`,
+      auto:`<circle cx="92" cy="56" r="44" fill="#c8d0d4" stroke="#818d92" stroke-width="3"/><circle cx="92" cy="56" r="26" fill="#8e9b9f"/><circle cx="92" cy="56" r="12" fill="#f5f5f5"/><circle cx="92" cy="29" r="5" fill="#f5f5f5"/><circle cx="92" cy="83" r="5" fill="#f5f5f5"/><circle cx="65" cy="56" r="5" fill="#f5f5f5"/><circle cx="119" cy="56" r="5" fill="#f5f5f5"/><path d="M120 23h25v53h-23L113 62V37Z" fill="#ce0822"/><path d="M132 28v43" stroke="#921026" stroke-width="3"/>`,
+      weld:`<path d="M50 26l72 8-6 59H56Z" fill="#292c2e" stroke="#171717" stroke-width="3"/><path d="M66 42h38l-3 25H67Z" fill="#718ca0" stroke="#c1d1d9" stroke-width="3"/><rect x="59" y="82" width="54" height="7" fill="#c4001a"/><path d="M126 23l21-11M131 32l24 2M125 41l17 13" stroke="#e5ab29" stroke-width="3" stroke-linecap="round"/>`
+    };
+    function artSvgData(type) {
+      const body = artSvg[type] || artSvg.tools;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 112" role="img"><ellipse cx="90" cy="101" rx="67" ry="5" fill="#ededed"/>${body}</svg>`);
+    }
+    const grid = document.getElementById('categories-grid');
+    const noResults = document.getElementById('no-results');
+    const feedback = document.getElementById('search-feedback');
+    const countLabel = document.getElementById('category-count');
+    const searchInput = document.getElementById('site-search');
+    function openCategory(name) { showModal(name, `<p>This category is included as part of the storefront replica. Real product browsing, inventory and checkout are not connected.</p><div class="demo-note">This is a static website for Genesys Messenger testing. Use the official Würth Canada store for purchasing.</div>`); }
+    function renderCategories(query='') {
+      const q = query.trim().toLowerCase();
+      grid.querySelectorAll('.category').forEach(el => el.remove());
+      const matches = categories.filter(c => !q || [c.name,c.search].join(' ').toLowerCase().includes(q));
+      for(const cat of matches){
+        const btn=document.createElement('button');btn.type='button';btn.className='category';btn.setAttribute('aria-label',`View ${cat.name} demo category`);
+        const img=document.createElement('img');img.src=artSvgData(cat.art);img.alt='';img.className='category-art';img.loading='eager';
+        const name=document.createElement('span');name.className='category-name';name.textContent=cat.name;
+        btn.append(img,name);btn.addEventListener('click',()=>openCategory(cat.name));
+        grid.insertBefore(btn,noResults);
+      }
+      noResults.style.display = matches.length ? 'none':'block';
+      countLabel.textContent = q ? `${matches.length} result${matches.length===1?'':'s'}` : '20 categories';
+      feedback.style.display=q?'block':'none';
+      if(q) feedback.textContent=`Showing ${matches.length} matching categor${matches.length===1?'y':'ies'} for “${query}”.`;
+    }
+    renderCategories();
+    document.getElementById('search-form').addEventListener('submit',e=>{e.preventDefault();renderCategories(searchInput.value);document.getElementById('categories').scrollIntoView({behavior:'smooth'});});
+    searchInput.addEventListener('input',()=>{if(searchInput.value.length===0) renderCategories();});
+    const megaList=document.getElementById('mega-categories');
+    categories.forEach(cat=>{const li=document.createElement('li');const button=document.createElement('button');button.type='button';button.textContent=cat.name;button.addEventListener('click',()=>{setMega(false);openCategory(cat.name);});li.appendChild(button);megaList.appendChild(li);});
+    const mega=document.getElementById('mega-menu'); const prodMenu=document.getElementById('products-menu');
+    function setMega(open){mega.classList.toggle('active',open);prodMenu.setAttribute('aria-expanded',String(open));}
+    prodMenu.addEventListener('click',e=>{e.stopPropagation();setMega(!mega.classList.contains('active'));});
+    document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))setMega(false);});
+    const mobToggle=document.getElementById('mobile-nav-toggle'); const nav=document.getElementById('nav-inner');
+    mobToggle.addEventListener('click',()=>{const open=nav.classList.toggle('open');mobToggle.setAttribute('aria-expanded',String(open));});
+    document.querySelectorAll('.nav-main a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');mobToggle.setAttribute('aria-expanded','false');}));
+    const backdrop=document.getElementById('modal-backdrop');const modal=document.getElementById('modal');const title=document.getElementById('modal-title');const content=document.getElementById('modal-content');
+    let previousFocus=null;
+    function showModal(heading,html){previousFocus=document.activeElement;title.textContent=heading;content.innerHTML=html;backdrop.classList.add('open');document.body.style.overflow='hidden';modal.focus();}
+    function closeModal(){backdrop.classList.remove('open');document.body.style.overflow='';if(previousFocus && typeof previousFocus.focus==='function')previousFocus.focus();}
+    document.getElementById('modal-close').addEventListener('click',closeModal);
+    document.getElementById('modal-done').addEventListener('click',closeModal);
+    backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeModal();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(backdrop.classList.contains('open'))closeModal();else setMega(false);}});
+    const contentFor = {
+      account:['Business account',`<p>The official store supports registered customer accounts and customized purchasing features.</p><div class="demo-note">To protect users, this test page does not collect usernames, passwords, customer details or registrations.</div>`],
+      cart:['Your cart',`<p>Your demo cart is empty.</p><div class="demo-note">Ordering, payments and checkout are disabled in this replica.</div>`],
+      quickorder:['Quick Order Pad',`<p>This is a non-transactional preview of a quick order entry form.</p><div class="quick-order"><span class="quick-order-label">Item number</span><span class="quick-order-label">Quantity</span><input aria-label="Demo item number 1" placeholder="Item #" autocomplete="off"><input aria-label="Demo quantity 1" type="number" placeholder="Qty" min="1"><input aria-label="Demo item number 2" placeholder="Item #" autocomplete="off"><input aria-label="Demo quantity 2" type="number" placeholder="Qty" min="1"><input aria-label="Demo item number 3" placeholder="Item #" autocomplete="off"><input aria-label="Demo quantity 3" type="number" placeholder="Qty" min="1"></div><div class="demo-note">This form does not send, store, or process data. There is no add-to-cart or ordering endpoint.</div>`],
+      offer:['Promotional details',`<p>This demo includes a promotional banner to match the visual layout of an online storefront.</p><div class="demo-note">Promotions, prices and availability change. Visit the official site to view actual active offers and their terms.</div>`],
+      about:['Würth Canada — demo information',`<p>Inspired by Würth Canada's online catalogue for professional industrial, automotive, construction, and maintenance supplies.</p><p>This standalone replica preserves the general visual hierarchy for UI and chat-widget testing, but it is not affiliated with or operated by the official store.</p><div class="demo-note">For authentic company information and shopping, use <a href="https://shop.wurth.ca/" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">shop.wurth.ca ↗</a>.</div>`],
+      new:['New products',`<p>This shortcut is included for storefront usability testing. Browse the static categories below for the product families represented in this demo.</p>`],
+      deals:['Hot deals',`<p>A sample store promotion destination. Current pricing and discount offers are available only from the live Würth Canada store.</p>`],
+      clearance:['Clearance',`<p>This page does not connect to the live store's clearance inventory. The visual shortcut is available for navigation testing only.</p>`],
+      email:['Email signup',`<p>Email signup is not available on this static test site.</p><div class="demo-note">No personal information is collected or stored. Use the official website if you want to subscribe to the real mailing list.</div>`]
+    };
+    document.querySelectorAll('[data-modal]').forEach(b=>b.addEventListener('click',()=>{const key=b.getAttribute('data-modal');const item=contentFor[key]; if(item)showModal(item[0],item[1]);}));
+    document.querySelectorAll('[data-info]').forEach(b=>b.addEventListener('click',()=>showModal('Demo note',`<p>${b.getAttribute('data-info')}</p>`)));
+    const mode = new URLSearchParams(location.search).get('messenger') || 'workflow';
+    if(mode==='workflow'||mode==='agentless'){const el=document.getElementById('mode-indicator');el.textContent=`Genesys QA · ${mode==='workflow'?'Workflow':'Agentless'} deployment`;el.classList.add('visible');}
+  </script>
+</body>
+</html>
